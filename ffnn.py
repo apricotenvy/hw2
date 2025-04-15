@@ -32,10 +32,11 @@ class FFNN(nn.Module):
 
     def forward(self, input_vector):
         # [to fill] obtain first hidden layer representation
-
+        hidden = self.activation(self.W1(input_vector))
         # [to fill] obtain output layer representation
-
+        output = self.W2(hidden)
         # [to fill] obtain probability dist.
+        predicted_vector = self.softmax(output)
 
         return predicted_vector
 
@@ -97,6 +98,10 @@ def load_data(train_data, val_data):
 
 
 if __name__ == "__main__":
+    # to log results of testing, used in report
+    log_file = open("ffnn_log.txt", "w")
+
+
     parser = ArgumentParser()
     parser.add_argument("-hd", "--hidden_dim", type=int, required = True, help = "hidden_dim")
     parser.add_argument("-e", "--epochs", type=int, required = True, help = "num of epochs to train")
@@ -105,6 +110,8 @@ if __name__ == "__main__":
     parser.add_argument("--test_data", default = "to fill", help = "path to test data")
     parser.add_argument('--do_train', action='store_true')
     args = parser.parse_args()
+
+    log_file.write("Hidden Dim: {}".format(args.hidden_dim))
 
     # fix random seeds
     random.seed(42)
@@ -155,6 +162,7 @@ if __name__ == "__main__":
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Training time for this epoch: {}".format(time.time() - start_time))
+        log_file.write("\nEpoch {} Train Acc: {}".format(epoch + 1, (correct*100) / total))
 
 
         loss = None
@@ -182,6 +190,9 @@ if __name__ == "__main__":
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         print("Validation time for this epoch: {}".format(time.time() - start_time))
+        log_file.write("\nEpoch {} Valid Acc: {}".format(epoch + 1, (correct*100) / total))
+
+    log_file.close()
 
     # write out to results/test.out
     

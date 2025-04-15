@@ -31,12 +31,13 @@ class RNN(nn.Module):
 
     def forward(self, inputs):
         # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
+        output, hidden = self.rnn(inputs)
         # [to fill] obtain output layer representations
-
+        hidden_final = hidden.squeeze(0)
         # [to fill] sum over output 
-
+        out = self.W(hidden_final)
         # [to fill] obtain probability dist.
+        predicted_vector = self.softmax(out)
 
         return predicted_vector
 
@@ -57,6 +58,10 @@ def load_data(train_data, val_data):
 
 
 if __name__ == "__main__":
+    # to log results of testing, used in report
+    log_file = open("rnn_log.txt", "w")
+
+
     parser = ArgumentParser()
     parser.add_argument("-hd", "--hidden_dim", type=int, required = True, help = "hidden_dim")
     parser.add_argument("-e", "--epochs", type=int, required = True, help = "num of epochs to train")
@@ -65,6 +70,8 @@ if __name__ == "__main__":
     parser.add_argument("--test_data", default = "to fill", help = "path to test data")
     parser.add_argument('--do_train', action='store_true')
     args = parser.parse_args()
+
+    log_file.write("Hidden Dim: {}".format(args.hidden_dim))
 
     print("========== Loading data ==========")
     train_data, valid_data = load_data(args.train_data, args.val_data) # X_data is a list of pairs (document, y); y in {0,1,2,3,4}
@@ -80,7 +87,7 @@ if __name__ == "__main__":
     model = RNN(50, args.hidden_dim)  # Fill in parameters
     # optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     optimizer = optim.Adam(model.parameters(), lr=0.01)
-    word_embedding = pickle.load(open('./word_embedding.pkl', 'rb'))
+    word_embedding = pickle.load(open('./Data_Embedding/word_embedding.pkl', 'rb'))
 
     stopping_condition = False
     epoch = 0
@@ -140,6 +147,7 @@ if __name__ == "__main__":
         print(loss_total/loss_count)
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        log_file.write("\nEpoch {} Train Acc: {}".format(epoch + 1, (correct*100) / total))
         trainning_accuracy = correct/total
 
 
@@ -164,18 +172,21 @@ if __name__ == "__main__":
             # print(predicted_label, gold_label)
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
+        log_file.write("\nEpoch {} Valid Acc: {}".format(epoch + 1, (correct*100) / total))
         validation_accuracy = correct/total
 
         if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
             stopping_condition=True
             print("Training done to avoid overfitting!")
             print("Best validation accuracy is:", last_validation_accuracy)
+            log_file.write("\nBest Valid Acc: {}".format(last_validation_accuracy*100))
         else:
             last_validation_accuracy = validation_accuracy
             last_train_accuracy = trainning_accuracy
 
         epoch += 1
 
+    log_file.close()
 
 
     # You may find it beneficial to keep track of training accuracy or training loss;

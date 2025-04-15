@@ -1,1 +1,6 @@
 Data_Embedding
+.venv
+ffnn_log.txt
+FFNN_results.txt
+rnn_log.txt
+RNN_results.txt
